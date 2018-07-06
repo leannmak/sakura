@@ -1,5 +1,6 @@
 # sakura
-[![Build Status](https://travis-ci.org/leannmak/sakura.svg?branch=master)](https://travis-ci.org/leannmak/sakura)  
+[![Build Status](https://travis-ci.org/leannmak/sakura.svg?branch=develop)](https://travis-ci.org/leannmak/sakura)
+[![Coverage Status](https://coveralls.io/repos/github/leannmak/sakura/badge.svg?branch=develop)](https://coveralls.io/github/leannmak/sakura?branch=develop)  
 
 **sakura**, named from **sakura kinomoto**, is developed as a tool for configuration file management based on `Etcd`, `Confd` and `Ansible`.
 
