@@ -520,6 +520,19 @@ class Etconf(object):
             app.logger.debug(logmsg(msg))
             msg = 'Tmpl File Deleted: %s' % results
             app.logger.info(logmsg(msg))
+            # 3. delete conf
+            for x in self._files:
+                state, state_sum, results = aapi.run(
+                    module='file',
+                    args=dict(
+                        path=os.path.join(x['dir'], x['name']),
+                        state='absent'))
+                msg = 'Conf File Deleted: %s' % state_sum
+                app.logger.debug(
+                    logmsg('%s %s' % (self._log_pre, msg)))
+                msg = 'Conf File Deleted: %s' % results
+                app.logger.info(
+                    logmsg('%s %s' % (self._log_pre, msg)))
 
     def push_files(self, rollback=False):
         """ update toml/tmpl/(conf) files to remote/local confd client """
