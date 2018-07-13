@@ -668,7 +668,8 @@ class Etconf(object):
             # compare the online to the expected using md5
             for host in self._hosts:
                 if results[host]['stderr']:
-                    ret[x['name']][host]['error'] = results[host]['stderr']
+                    ret[x['name']][host] = dict(
+                        error='{0}: No such file or directory'.format(abs_path))
                 else:
                     actual_raw = results[host]['stdout'].rstrip('\r\n')
                     actual_md5 = md5hex(actual_raw)
