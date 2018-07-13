@@ -662,20 +662,25 @@ class Etconf(object):
                 module='shell', args='cat {0}'.format(abs_path))
             # compare the online to the expected using md5
             for host in self._hosts:
-                actual_raw = results[host]['stdout'].rstrip('\r\n')
-                actual_md5 = md5hex(actual_raw)
-                if actual_md5 != expected_md5:
-                    ret[x['name']][host]['content'] = '{0} != {1}'.format(
-                        actual_md5, expected_md5)
-                    ret[x['name']][host]['content_expected'] = expected_raw
-                    ret[x['name']][host]['content_actual'] = actual_raw
+                if results[host]['stderr']:
+                    ret[x['name']][host]['error'] = results[host]['stderr']
                 else:
-                    ret[x['name']][host]['content'] = "OK"
+                    actual_raw = results[host]['stdout'].rstrip('\r\n')
+                    actual_md5 = md5hex(actual_raw)
+                    if actual_md5 != expected_md5:
+                        ret[x['name']][host]['content'] = '{0} != {1}'.format(
+                            actual_md5, expected_md5)
+                        ret[x['name']][host]['content_expected'] = expected_raw
+                        ret[x['name']][host]['content_actual'] = actual_raw
+                    else:
+                        ret[x['name']][host]['content'] = "OK"
             # 2. check mode
             state, state_sum, results = aapi.run(
                 module='shell',
                 args="ls -al %s|awk '{print $1}'" % abs_path)
             for host in self._hosts:
+                if 'error' in ret[x['name']][host]:
+                    continue
                 mode = '0{0}{1}{2}'.format(
                     sum([mode_dict[y] for y in results[host]['stdout'][1:4]]),
                     sum([mode_dict[y] for y in results[host]['stdout'][4:7]]),
@@ -688,6 +693,8 @@ class Etconf(object):
                 module='shell',
                 args="ls -al %s|awk '{print $3,$4}'" % abs_path)
             for host in self._hosts:
+                if 'error' in ret[x['name']][host]:
+                    continue
                 owner = results[host]['stdout'].split()
                 ret[x['name']][host]['owner'] = (
                     '{0} != {1}'.format(
@@ -699,5 +706,7 @@ class Etconf(object):
                 module='shell',
                 args="ls --full-time %s|awk '{print $6,$7,$8}'" % abs_path)
             for host in self._hosts:
+                if 'error' in ret[x['name']][host]:
+                    continue
                 ret[x['name']][host]['last_modify_time'] = results[host]['stdout']
         return ret
