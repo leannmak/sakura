@@ -162,10 +162,15 @@ class Etconf(object):
         app.logger.debug(logmsg(msg))
         msg = 'Uid and Gid Get: %s' % results
         app.logger.info(logmsg(msg))
-        results = {
-            k: dict(uid=v['stdout_lines'][0], gid=v['stdout_lines'][1])
-            for k, v in results.items()}
-        return results
+        ret = {}
+        for k, v in results.items():
+            if v['stdout_lines']:
+                ret[k] = dict(
+                    uid=v['stdout_lines'][0], gid=v['stdout_lines'][1])
+            else:
+                raise Exception(
+                    '{0}: No such user ({1}, {2})'.format(k, name, group))
+        return ret
 
     def create_toml(self):
         """create toml files
