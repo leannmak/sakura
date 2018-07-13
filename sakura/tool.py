@@ -153,8 +153,8 @@ class Etconf(object):
         """fetch owner's uid and gid via name
         """
         aapi = Ansible2API(hosts=self._hosts, **self._ansible_kwargs)
-        state, state_sum, results = aapi.run(
-            module='shell',
+        state, state_sum, results = ansible_safe_run(
+            aapi=aapi, module='shell',
             args="cat /etc/passwd | grep ^%s: | awk -F ':' '{print $3}';"
                  "cat /etc/passwd | grep ^%s: | awk -F ':' '{print $3}';" % (
                      name, group))
@@ -226,8 +226,8 @@ class Etconf(object):
         """get toml file content from remote confd client
         """
         aapi = Ansible2API(hosts=[host], **self._ansible_kwargs)
-        state, state_sum, results = aapi.run(
-            module='shell',
+        state, state_sum, results = ansible_safe_run(
+            aapi=aapi, module='shell',
             args='cat %s.%s.toml' % (self._file_pre, cfg_name))
         msg = 'Toml File Get: %s' % state_sum
         app.logger.debug(logmsg(msg))
@@ -244,8 +244,8 @@ class Etconf(object):
         """get template file content from remote confd client
         """
         aapi = Ansible2API(hosts=[host], **self._ansible_kwargs)
-        state, state_sum, results = aapi.run(
-            module='shell',
+        state, state_sum, results = ansible_safe_run(
+            aapi=aapi, module='shell',
             args='cat %s.tmpl' % os.path.join(self._folder_pre, cfg_name))
         msg = 'Tmpl File Get: %s' % state_sum
         app.logger.debug(logmsg(msg))
@@ -257,8 +257,8 @@ class Etconf(object):
         """get toml files from remote confd client
         """
         aapi = Ansible2API(hosts=[host], **self._ansible_kwargs)
-        state, state_sum, results = aapi.run(
-            module='shell',
+        state, state_sum, results = ansible_safe_run(
+            aapi=aapi, module='shell',
             args='ls %s | grep "^%s\..*\.toml$" | awk 1' % (
                 self._r_toml, self._file_pre))
         msg = 'Toml File Check: %s' % state_sum
@@ -271,8 +271,8 @@ class Etconf(object):
         """get template files from remote confd client
         """
         aapi = Ansible2API(hosts=[host], **self._ansible_kwargs)
-        state, state_sum, results = aapi.run(
-            module='shell',
+        state, state_sum, results = ansible_safe_run(
+            aapi=aapi, module='shell',
             args='ls %s | awk 1' % os.path.join(
                 self._r_tmpl, self._folder_pre))
         msg = 'Tmpl File Check: %s' % state_sum
@@ -321,8 +321,8 @@ class Etconf(object):
             # 1. backup toml to minio server
             tomls = self.get_tomls(host=host)
             for x in tomls:
-                state, state_sum, results = aapi.run(
-                    module='fetch',
+                state, state_sum, results = ansible_safe_run(
+                    aapi=aapi, module='fetch',
                     args=dict(
                         dest='%s/' % toml_bak,
                         src=os.path.join(self._r_toml, x),
@@ -338,8 +338,8 @@ class Etconf(object):
             # 2. backup tmpl to minio server
             tmpls = self.get_tmpls(host=host)
             for x in tmpls:
-                state, state_sum, results = aapi.run(
-                    module='fetch',
+                state, state_sum, results = ansible_safe_run(
+                    aapi=aapi, module='fetch',
                     args=dict(
                         dest='%s/' % tmpl_bak,
                         src=os.path.join(self._r_tmpl, self._folder_pre, x),
@@ -360,8 +360,8 @@ class Etconf(object):
                     '@@'.join([x['mode'], x['owner']['name'], x['owner']['group']]),
                     self._broken_word_2,
                     src.replace('/', self._broken_word_1))
-                state, state_sum, results = aapi.run(
-                    module='fetch',
+                state, state_sum, results = ansible_safe_run(
+                    aapi=aapi, module='fetch',
                     args=dict(
                         dest=os.path.join(conf_bak, file_name),
                         src=src, flat='yes'))
@@ -470,8 +470,8 @@ class Etconf(object):
             for x in tomls:
                 config = x.split(self._file_pre)[1].split('toml')[0].strip('.')
                 if config not in cfg_names:
-                    state, state_sum, results = aapi.run(
-                        module='file',
+                    state, state_sum, results = ansible_safe_run(
+                        aapi=aapi, module='file',
                         args=dict(
                             path=os.path.join(self._r_toml, x),
                             state='absent'))
@@ -484,8 +484,8 @@ class Etconf(object):
             for x in tmpls:
                 config = x.split('.tmpl')[0]
                 if config not in cfg_names:
-                    state, state_sum, results = aapi.run(
-                        module='file',
+                    state, state_sum, results = ansible_safe_run(
+                        aapi=aapi, module='file',
                         args=dict(
                             path=os.path.join(
                                 self._r_tmpl, self._folder_pre, x),
@@ -505,8 +505,8 @@ class Etconf(object):
             # 1. delete toml
             tomls = self.get_tomls(host=host)
             for x in tomls:
-                state, state_sum, results = aapi.run(
-                    module='file',
+                state, state_sum, results = ansible_safe_run(
+                    aapi=aapi, module='file',
                     args=dict(
                         path=os.path.join(self._r_toml, x),
                         state='absent'))
@@ -515,8 +515,8 @@ class Etconf(object):
                 msg = 'Toml File Deleted: %s' % results
                 app.logger.info(logmsg(msg))
             # 2. delete tmpl
-            state, state_sum, results = aapi.run(
-                module='file',
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='file',
                 args=dict(
                     path='%s/' % os.path.join(
                         self._r_tmpl, self._folder_pre),
@@ -527,8 +527,8 @@ class Etconf(object):
             app.logger.info(logmsg(msg))
             # 3. delete conf
             for x in self._files:
-                state, state_sum, results = aapi.run(
-                    module='file',
+                state, state_sum, results = ansible_safe_run(
+                    aapi=aapi, module='file',
                     args=dict(
                         path=os.path.join(x['dir'], x['name']),
                         state='absent'))
@@ -594,8 +594,8 @@ class Etconf(object):
                     config = x.split(self._broken_word_2)
                     file_path = config[1].replace(self._broken_word_1, '/')
                     info = config[0].split('@@')
-                    state, state_sum, results = aapi.run(
-                        module='copy',
+                    state, state_sum, results = ansible_safe_run(
+                        aapi=aapi, module='copy',
                         args=dict(
                             mode=info[0],
                             src=os.path.join(conf_folder, x),
@@ -607,8 +607,8 @@ class Etconf(object):
                     msg = 'Conf File Updated: %s' % results
                     app.logger.info(logmsg(msg))
             # 1. push toml files to remote/local confd client
-            state, state_sum, results = aapi.run(
-                module='copy',
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='copy',
                 args=dict(
                     mode=self._confd_file_mode,
                     src=toml_folder,
@@ -621,8 +621,8 @@ class Etconf(object):
             app.logger.info(logmsg(msg))
             # 2. push tmpl files to remote/local confd client
             r_tmpl_folder = os.path.join(self._r_tmpl, self._folder_pre)
-            state, state_sum, results = aapi.run(
-                module='copy',
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='copy',
                 args=dict(
                     mode=self._confd_file_mode,
                     src=tmpl_folder,
@@ -637,8 +637,8 @@ class Etconf(object):
     def confd_cmd(self, action):
         """ confd client startup cmd """
         aapi = Ansible2API(hosts=self._hosts, **self._ansible_kwargs)
-        state, state_sum, results = aapi.run(
-            module='shell',
+        state, state_sum, results = ansible_safe_run(
+            aapi=aapi, module='shell',
             args=self._confd_startup_cmd[action])
         msg = 'Confd %s: %s' % (action.upper(), state_sum)
         app.logger.debug(logmsg(msg))
@@ -663,8 +663,8 @@ class Etconf(object):
             expected_raw = content.rstrip('\r\n')
             expected_md5 = md5hex(expected_raw)
             # use ansible to fetch file content
-            state, state_sum, results = aapi.run(
-                module='shell', args='cat {0}'.format(abs_path))
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='shell', args='cat {0}'.format(abs_path))
             # compare the online to the expected using md5
             for host in self._hosts:
                 if results[host]['stderr']:
@@ -681,8 +681,8 @@ class Etconf(object):
                     else:
                         ret[x['name']][host]['content'] = "OK"
             # 2. check mode
-            state, state_sum, results = aapi.run(
-                module='shell',
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='shell',
                 args="ls -al %s|awk '{print $1}'" % abs_path)
             for host in self._hosts:
                 if 'error' in ret[x['name']][host]:
@@ -695,8 +695,8 @@ class Etconf(object):
                     '{0} != {1}'.format(mode, x['mode'])
                     if mode != x['mode'] else 'OK')
             # 3. check owner
-            state, state_sum, results = aapi.run(
-                module='shell',
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='shell',
                 args="ls -al %s|awk '{print $3,$4}'" % abs_path)
             for host in self._hosts:
                 if 'error' in ret[x['name']][host]:
@@ -708,11 +708,19 @@ class Etconf(object):
                     if owner[0] != x['owner']['name'] and
                     owner[1] != x['owner']['group'] else 'OK')
             # 4. check modify time
-            state, state_sum, results = aapi.run(
-                module='shell',
+            state, state_sum, results = ansible_safe_run(
+                aapi=aapi, module='shell',
                 args="ls --full-time %s|awk '{print $6,$7,$8}'" % abs_path)
             for host in self._hosts:
                 if 'error' in ret[x['name']][host]:
                     continue
                 ret[x['name']][host]['last_modify_time'] = results[host]['stdout']
         return ret
+
+
+def ansible_safe_run(aapi, module, args):
+    state, state_sum, results = aapi.run(module=module, args=args)
+    for k, v in state_sum.items():
+        if v['unreachable']:
+            raise Exception('{0}: {1}'.format(k, results[k]['msg']))
+    return state, state_sum, results
