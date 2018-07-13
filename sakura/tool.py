@@ -164,12 +164,13 @@ class Etconf(object):
         app.logger.info(logmsg(msg))
         ret = {}
         for k, v in results.items():
-            if v['stdout_lines']:
+            if len(v['stdout_lines']) == 2:
                 ret[k] = dict(
                     uid=v['stdout_lines'][0], gid=v['stdout_lines'][1])
             else:
                 raise Exception(
-                    '{0}: No such user ({1}, {2})'.format(k, name, group))
+                    '{0}: No such user or group ({1}, {2})'.format(
+                        k, name, group))
         return ret
 
     def create_toml(self):
