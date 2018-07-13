@@ -533,11 +533,9 @@ class Etconf(object):
                         path=os.path.join(x['dir'], x['name']),
                         state='absent'))
                 msg = 'Conf File Deleted: %s' % state_sum
-                app.logger.debug(
-                    logmsg('%s %s' % (self._log_pre, msg)))
+                app.logger.debug(logmsg(msg))
                 msg = 'Conf File Deleted: %s' % results
-                app.logger.info(
-                    logmsg('%s %s' % (self._log_pre, msg)))
+                app.logger.info(logmsg(msg))
 
     def push_files(self, rollback=False):
         """ update toml/tmpl/(conf) files to remote/local confd client """
